@@ -1,0 +1,30 @@
+# Intellij
+*.iml
+.idea
+
+# npm
+node_modules
+package-lock.json
+
+# build
+main.js
+*.js.map
+styles.css
+
+# obsidian
+data.json
+
+# Pocket integration
+.__pocket_access_info__
+
+# Astroturf css
+**/*.module.css
+
+# Mac OS
+.DS_Store
+
+# Others
+node_modules/
+dist/
+.vscode/
+*.code-workspace

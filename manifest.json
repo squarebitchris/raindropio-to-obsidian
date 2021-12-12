@@ -1,0 +1,10 @@
+{
+  "id": "raindropio-to-obsidian",
+  "name": "RaindropIO To Obsidian",
+  "description": "Sync Raindrop data into Obsidian",
+  "version": "0.0.0",
+  "author": "squarebitchris",
+  "authorUrl": "https://github.com/squarebizchris/",
+  "isDesktopOnly": false,
+  "minAppVersion": "0.10.8"
+}
