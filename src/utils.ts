@@ -4,6 +4,8 @@ import { request } from 'obsidian';
 import { Raindrop, RaindropList } from './models';
 import axios from "axios";
 
+import { App, Notice, TFile } from "obsidian";
+
 /**
  * Fetches a raindrop object from the Raindrop API
  * @param {string} id - The ID of the raindrop to fetch from the API
@@ -64,6 +66,28 @@ import axios from "axios";
     return raindrops
  }
 
+
+/**
+ * Updates collection ID a raindrop object in the Raindrop API
+ * @param {string} id - The ID of the raindrop to update from the API
+ * @param {string} bearer - The bearer token
+ * @returns {Raindrop} - The raindrop from the Raindrop API
+ */
+ export const archiveRaindrop = async (raindrop: any): Promise<T> => {
+  // TODO - move to a utility function
+  const pluginSettings = window.app.plugins.plugins['raindropio-to-obsidian'].settings;
+  // console.log('Find Plugin Settings', pluginSettings)
+  const bearerToken = pluginSettings.bearerToken || '';
+  // fetch the list of raindrops
+  // console.log('archiveRaindrop', raindrop._id)
+  const result = await updateRaindropCollection(raindrop._id, bearerToken);
+  console.log('here from archive raindrop', result)
+  // setRaindrops(result)
+  // setUnsortedRaindropCount(result.count)
+  return {};
+}
+
+
 /**
  * Updates collection ID a raindrop object in the Raindrop API
  * @param {string} id - The ID of the raindrop to update from the API
@@ -92,7 +116,65 @@ import axios from "axios";
   }
 
 
-  // // import {Media, Poll, Tweet} from './models'
+// Obsidian Note Functions
+
+/**
+ * Creates a Obsidian Note from aindrop object
+ * @param {object} raindop - The data from Raindrop API
+ * @returns {Note} - Obsidian Note
+ */
+ export const buildNote = async (raindrop: any): Promise<TFile> => {
+    const app = window.app as App;
+    const { vault } = app;
+    console.log("createRaindropNote data", raindrop);
+    const stockIllegalSymbols = /[\\/:|#^[\]]/g;
+    const cleanTitle = raindrop.title.replace(stockIllegalSymbols, '');
+    const normalizedPath = `Raindrop - ${cleanTitle}.md`;
+    console.log('attempting to create file: ' + normalizedPath);
+    try {
+
+      let templateContents = '---\n';
+      templateContents += `tags:\n`;
+      templateContents += `- literature\n`;
+      templateContents += `- articles\n`;
+      templateContents += `- raindrops\n`;
+      templateContents += `links:\n`;
+      raindrop.tags.map((tag:string) => (templateContents += `- ${tag}\n`));
+      templateContents += `status: unprocessed\n`;
+      templateContents += '---\n';
+      templateContents += `- Title: ${normalizedPath}\n`;
+      templateContents += `- Links: \n`;
+      raindrop.tags.map((tag:string) => (templateContents += `  - [[${tag}]]\n`));
+      templateContents += `- Source Link: [Link](${raindrop.link}) \n`;
+      templateContents += '---\n';
+      templateContents += '\n\n';
+      templateContents += '## Notes\n';
+      templateContents += '\n\n';
+      templateContents += '## Highlights\n';
+  
+      // const createdFile = await vault.create(normalizedPath, templateContents
+      //   .replace(/{{\s*title\s*}}/gi, filename) );
+      
+      const createdFile = await vault.create(
+        normalizedPath,
+        templateContents,
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (app as any).foldManager.save(createdFile, "");
+  
+      new Notice("Note created successfully");
+      return createdFile;
+    } catch (err) {
+      console.error(`Failed to create file: '${normalizedPath}'`, err);
+      new Notice("Unable to create new file.");
+    }
+  }
+
+
+
+
+
+// // import {Media, Poll, Tweet} from './models'
 // // import {DownloadManager} from './downloadManager'
 // import RTOPlugin from 'main'
 // import {RTOSettings} from './settings'
