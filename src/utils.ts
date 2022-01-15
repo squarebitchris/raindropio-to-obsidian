@@ -35,7 +35,7 @@ import { App, Notice, TFile } from "obsidian";
     const raindrop: Raindrop = JSON.parse(raindropRequest).item
     return raindrop
   }
-        
+      
 /**
  * Fetches array of raindrop objects from the Raindrop API
  * @param {string} id - The collection ID to fetch from the API, -1 for unsorted
@@ -65,6 +65,63 @@ import { App, Notice, TFile } from "obsidian";
     const raindrops: RaindropList = JSON.parse(raindropRequest).items
     return raindrops
  }
+
+/**
+ * Fetches array of tags from the Raindrop API
+ * @param {string} id - The collection ID to fetch from the API, -1 for unsorted
+ * @param {string} bearer - The bearer token
+ * @returns {TagList} - An array of Tag Objects from the RaindropIO API
+ */
+ export const getTags = async (id: string, bearer: string): Promise<RaindropList> => {
+  // Performs a GET request collections endpoint of the Raindrop API
+  const raindropsUrl = new URL(`https://api.raindrop.io/rest/v1/tags/${id}`)
+  let raindropRequest
+  try {
+      raindropRequest = await request({
+      method: 'GET',
+      url: `${raindropsUrl.href}`,
+      headers: {Authorization: `Bearer ${bearer}`},
+      })
+  } catch (error) {
+      if (error.request) {
+      throw new Error('There seems to be a connection issue.')
+      } else {
+      console.error(error)
+      throw error
+      }
+  }
+  // If the request was successful, parse the response and return the Raindrop
+  // console.log('raindropList Request Return', raindropRequest)
+  const tags: any = JSON.parse(raindropRequest).items
+  const sortedArray= tags.sort(function(a, b) {
+    const textA = a._id;
+    const textB = b._id;
+    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+  })
+ console.log('sortedArray', sortedArray)
+  return sortedArray
+}
+
+
+/**
+ * Fetches array of raindrop objects from the Raindrop API
+ * @param {string} id - The collection ID to fetch from the API, -1 for unsorted
+ * @param {string} bearer - The bearer token
+ * @returns {RaindropList} - An array of Raindrop Objects from the RaindropIO API
+ */
+ export const filterRaindrops = async (id: string, bearer: string, tagName: string): Promise<RaindropList> => {
+  const config = {
+    headers: {'Authorization': `Bearer ${bearer}`},
+    params: {
+      search: `#"${tagName}"`
+    },
+  }
+  const raindropRequest = await axios.get(`https://api.raindrop.io/rest/v1/raindrops/${id}`, config)
+  // const raindrops: RaindropList = raindropRequest.data;
+  // console.log('raindropList Request Return', raindropRequest)
+  return raindropRequest.data.items;
+
+}
 
 
 /**
@@ -129,7 +186,7 @@ import { App, Notice, TFile } from "obsidian";
     console.log("createRaindropNote data", raindrop);
     const stockIllegalSymbols = /[\\/:|#^[\]]/g;
     const cleanTitle = raindrop.title.replace(stockIllegalSymbols, '');
-    const normalizedPath = `Raindrop - ${cleanTitle}.md`;
+    const normalizedPath = `Article - ${cleanTitle}.md`;
     console.log('attempting to create file: ' + normalizedPath);
     try {
 

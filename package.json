@@ -1,6 +1,6 @@
 {
   "name": "raindropio-to-obsidian",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Sync Raindrop data into Obsidian",
   "author": "squarebitchris",
   "main": "main.js",
